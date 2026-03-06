@@ -1,0 +1,57 @@
+#################
+asm=nasm
+build_dir=build
+src_dir=src
+
+$(build_dir)/main.img: $(build_dir)/main.bin
+	cp $(build_dir)/main.bin $(build_dir)/main.img
+	truncate -s 1440k $(build_dir)/main.img
+
+$(build_dir)/main.bin: $(src_dir)/main.asm
+	$(asm) $(src_dir)/main.asm -f bin -o $(build_dir)/main.bin
+##################
+strings function
+
+48 8B 18
+0x48: 	0100 1000
+	  	0100 - REX prefix (64-bit register, RAX, RBX, RCX)
+	  	1000 - WRXB bits:
+		(1)000 - operands size 1 - 64-bit, 0 - 32-bit
+		000 - low registers (RAX, RBX, RCX) or high registers (R8, R9, ... R15)
+0x8B:	mov reg, r/m
+0x18:	00 011 000 - ModR/M
+		00 - Mode, the need of displacement
+		011 - RBX
+		000 - RAX
+
+49 8B 49 08
+			 W R X B
+0x49:	0100 1 0 0 1
+		0100 - REX (64-bit operands)
+		W -> 1 - 64-bit registers, 0 - 32-bit registers
+		R -> 
+		X -> 
+		B -> 1 - high base register (R8 - R15), 0 - low base register (RAX - RDI)
+0x8B:	mov reg, r/m
+0x49: 	01 001 001 - ModR/M
+		01 - Mode, displacement 0x08
+		001 - RCX
+		001 - RCX, but -> 1001 (R9)
+0x08: displacement
+mov recx, [r9 + 0x8]
+reverse by replacing 8B with 89:
+49 89 49 08 - mov [r9 + 0x8], rcx
+
+linear sweep and recursive descent
+recursive descent:
+JNZ, JZ, JNE, JE, ...
+JMP
+CALL
+
+;
+; push ebp
+; mov ebp, esp
+; ...
+; mov esp, ebp
+; pop ebp
+
