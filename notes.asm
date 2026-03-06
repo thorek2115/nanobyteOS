@@ -242,3 +242,21 @@
 ;
 ;
 ;
+
+;
+;
+;
+
+; CDECL calling convention:
+; arguments:
+;  - passed through stack
+;  - pushed from right to left
+;  - caller removes parameters from stack
+; return:
+;  - integers, pointers: ax or eax
+;  - floating point: st0
+; registers:
+;  - eax, ecx, edx saved by caller
+;  - all others saved by callee
+; name mangling: C functions are prepended with a _
+;

@@ -107,7 +107,7 @@ main:
     mov di, buffer
 
 .search_kernel:
-    mov si, file_kernel_bin
+    mov si, file_stage2_bin
     mov cx, 11                          ; compare up to 11 characters
     push di                             ; save di (buffer)
 
@@ -131,7 +131,7 @@ main:
 .found_kernel:
     ; di should have the address to the entry
     mov ax, [di + 26] ; first logical cluster field (offset 26)
-    mov [kernel_cluster], ax
+    mov [stage2_cluster], ax
 
     ; load FAT from disk into memory
     mov ax, [bdb_reserved_sectors] ; lba address
@@ -148,9 +148,9 @@ main:
 
 .load_kernel_loop:
     ; read next cluster
-    mov ax, [kernel_cluster]
+    mov ax, [stage2_cluster]
     ; hardcoded value :(
-    add ax, 31  ; first cluster = (kernel_cluster - 2) * sectors_per_cluster + start_sector
+    add ax, 31  ; first cluster = (stage2_cluster - 2) * sectors_per_cluster + start_sector
                 ; start sector = reserved + fats + root directory size = 1 + 18 + 14 = 33
     mov cl, 1  ; number of sectors to read
     mov dl, [ebr_drive_number]  ; drive number
@@ -159,14 +159,14 @@ main:
     add bx, [bdb_bytes_per_sector]      ; can overflow if kernel.bin is larger 64KB and corrupt the read file
 
     ; compute location of next cluster, 
-    mov ax, [kernel_cluster]
+    mov ax, [stage2_cluster]
     mov cx, 3
     mul cx
     mov cx, 2
     div cx  ; ax = index of entry in FAT, dx = cluster % 2
-            ; ax = (kernel_cluster * 3) / 2
+            ; ax = (stage2_cluster * 3) / 2
     mov si, buffer
-    add si, ax  ; buffer + (kernel_cluster * 3) / 2
+    add si, ax  ; buffer + (stage2_cluster * 3) / 2
     mov ax, [ds:si]   ; ax = [buffer + index of the next cluster], read entry from FAT table at index ax
 
     or dx, dx  ; 1) dx = 1 or 1 => 1      2) dx = 0 or 0 => 0 (ZF)
@@ -183,7 +183,7 @@ main:
     cmp ax, 0x0FF8 ; check if number is above or equal to FF8, which is end of chain
     jae .read_finish
 
-    mov [kernel_cluster], ax
+    mov [stage2_cluster], ax
     jmp .load_kernel_loop ; jump to the beginning of the loop
 
 .read_finish:
@@ -211,7 +211,7 @@ floppy_error:
     jmp wait_key_and_reboot
 
 kernel_not_found_error:
-    mov si, msg_kernel_not_found
+    mov si, msg_stage2_not_found
     call print
     jmp wait_key_and_reboot
 
@@ -359,9 +359,9 @@ print:
 
 msg_loading:            db 'Loading...', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
-msg_kernel_not_found:   db 'STAGE2.BIN file not found!', ENDL, 0
-file_kernel_bin:        db 'STAGE2  BIN'
-kernel_cluster:         dw 0
+msg_stage2_not_found:   db 'STAGE2.BIN file not found!', ENDL, 0
+file_stage2_bin:        db 'STAGE2  BIN'
+stage2_cluster:         dw 0
 
 ; test: db 0x67, 0x67, 0x67, 0x67, 0x67
 
