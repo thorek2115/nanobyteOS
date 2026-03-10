@@ -260,3 +260,28 @@
 ;  - all others saved by callee
 ; name mangling: C functions are prepended with a _
 ;
+
+; printf implementation:
+; int printf(const char* format, ...);
+; %[flags][width][.precision][length]specifier
+;
+; Specifier:
+; +-----------+---------------------------+----------+
+; | specifier |          output           | example  |
+; +-----------+--------------------------------------+
+; |  d or i   |   signed decimal integer  |   235    |
+; |     u     | unsigned decimal integer  |   6705   |
+; ...
+
+; 
+
+
+; Protected Mode:
+; History w processors:
+; 1977 | Apple II
+; 1978 | Intel 8086
+; 1979 | Intel 8088 (cheaper 8086 having only 8 data lines)
+; 1979 | Motorola 68000
+; 1981 | IBM PC (8088)
+; 1984 | Apple Macintosh
+; 
